@@ -53,12 +53,16 @@ Env vars:
 - `server/.env`: `PORT` (default 3001), `CLIENT_ORIGIN` (CORS allow-origin, default `http://localhost:5173`)
 - `client/.env`: `VITE_SERVER_URL` (Socket.io server URL, default `http://localhost:3001`)
 
-## Deployment notes
+## Deployment
 
-Socket.io needs a long-lived connection — **Vercel serverless functions can't host it**. Plan:
-- Client (`client/`) → Vercel (static build).
-- Server (`server/`) → a host that supports persistent Node processes (Render/Railway/Fly.io etc.), not yet chosen/deployed as of this writing.
-- When deployed, set `VITE_SERVER_URL` (client) and `CLIENT_ORIGIN` (server) to the real URLs.
+Socket.io needs a long-lived connection — **Vercel serverless functions can't host it**. Split deploy:
+- Client (`client/`) → Vercel: https://client-olive-kappa.vercel.app
+- Server (`server/`) → Render (Blueprint from `render.yaml` at repo root): https://chess-server-pfip.onrender.com
+  - Free plan spins down after inactivity; first request after idle can take ~30-60s to wake up.
+- Env vars set: `VITE_SERVER_URL` (Vercel, production) → Render URL; `CLIENT_ORIGIN` (Render, via `render.yaml`) → Vercel URL.
+- To redeploy client after changes: `cd client && vercel --prod`.
+- To redeploy server: push to `main` — Render auto-deploys from GitHub on push (blueprint sync).
+- Repo: https://github.com/aygunbayirdev/chess
 
 ## Known limitations / possible next steps
 
